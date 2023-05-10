@@ -1,7 +1,8 @@
-import { Box, Icon, IconButton, useTheme } from "@mui/material"
-import { useContext } from "react";
+import { Box, IconButton, useTheme } from "@mui/material"
+import { useContext, useState, useEffect } from "react";
 import { ColorModeContext, tokens } from "../../theme";
 import { InputBase } from "@mui/material";
+
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
@@ -9,19 +10,35 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 
+import MultipleSelectPlaceholder from "../../components/MultipleSelectPlaceholder"
+
+const list = [{
+    value:"Hospital X",
+    key:"uuid"
+}, {
+    value:"Hospital Y",
+    key:"uuid"
+}];
+
 const TopBar = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const colorMode = useContext(ColorModeContext);
-    
-    return (<>
-    <Box display="flex" justifyContent="space-between" p={2}>
+    const [organizationsList, setOrganizationsList] = useState([{}]);
 
-        {/* Search Bar */}
+    useEffect(()=>{
+        setOrganizationsList(list)
+	}, [])
+
+    return (<>
+    <Box display="flex" justifyContent="space-between" pb={2}>
+
+        {/* Searc   h Bar */}
         <Box 
             display="flex" 
-            background-color={colors.primary[400]} 
+            backgroundColor={colors.primary[400]} 
             borderRadius="3px"
+            sx={{ m:"12px 0"}}
         >
             <InputBase
                 sx={{ ml: 2, flex: 1}}
@@ -36,7 +53,8 @@ const TopBar = () => {
         </Box>
 
         {/* Icons Section*/}
-        <Box display="flex" >
+        <Box display="flex" alignItems={"center"}>
+            <MultipleSelectPlaceholder placeholder={"Organization"} options={organizationsList} />
             <IconButton onClick={colorMode.toggleColorMode}>
                 {theme.palette.colorMode === 'dark' ? (
                     <DarkModeOutlinedIcon/>

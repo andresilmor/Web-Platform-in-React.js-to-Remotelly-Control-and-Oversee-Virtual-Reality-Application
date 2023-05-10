@@ -426,6 +426,7 @@ export const geoFeatures = {
         },
         id: "ARM",
       },
+      /*
       {
         type: "Feature",
         properties: {
@@ -1127,7 +1128,7 @@ export const geoFeatures = {
           ],
         },
         id: "ATA",
-      },
+      } */
       {
         type: "Feature",
         properties: {

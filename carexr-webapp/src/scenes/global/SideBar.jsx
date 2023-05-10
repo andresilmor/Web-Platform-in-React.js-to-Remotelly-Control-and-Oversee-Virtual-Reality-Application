@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
-import { Box, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, IconButton, Typography, Avatar, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
 import "react-pro-sidebar/dist/css/styles.css";
 import { tokens } from "../../theme";
@@ -17,7 +17,7 @@ import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 
-const Item = ({ title, to, icon, selected, setSelected }) => {
+const SidebarItem = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   return (
@@ -72,6 +72,7 @@ const Sidebar = () => {
               color: colors.grey[100],
             }}
           >
+
             {!isCollapsed && (
               <Box
                 display="flex"
@@ -79,8 +80,8 @@ const Sidebar = () => {
                 alignItems="center"
                 ml="15px"
               >
-                <Typography variant="h3" color={colors.grey[100]}>
-                  ADMINIS
+                <Typography variant="h4" color={colors.grey[100]}>
+                  CareXR Platform
                 </Typography>
                 <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
                   <MenuOutlinedIcon />
@@ -89,41 +90,42 @@ const Sidebar = () => {
             )}
           </MenuItem>
 
+
           {!isCollapsed && (
             <Box mb="25px">
               <Box display="flex" justifyContent="center" alignItems="center">
-                <img
-                  alt="profile-user"
-                  width="100px"
-                  height="100px"
-                  src={`../../assets/user.png`}
-                  style={{ cursor: "pointer", borderRadius: "50%" }}
-                />
+              <Avatar
+                alt="Remy Sharp"
+                src="../../assets/profile-placeholder.png"
+                sx={{ width: 100, height: 100 }}
+              />
               </Box>
               <Box textAlign="center">
                 <Typography
-                  variant="h2"
+                  variant="h3"
                   color={colors.grey[100]}
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0" }}
                 >
-                  Ed Roh
+                  Name
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
-                  VP Fancy Admin
+                  Role
                 </Typography>
               </Box>
             </Box>
           )}
 
+
           <Box paddingLeft={isCollapsed ? undefined : "10%"}>
-            <Item
+            <SidebarItem
               title="Dashboard"
               to="/"
               icon={<HomeOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
+
 
             <Typography
               variant="h6"
@@ -132,27 +134,29 @@ const Sidebar = () => {
             >
               Account
             </Typography>
-            <Item
+
+            <SidebarItem
               title="Manage Team"
               to="/team"
               icon={<PeopleOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
+            <SidebarItem
               title="Contacts Information"
               to="/contacts"
               icon={<ContactsOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
+            <SidebarItem
               title="Invoices Balances"
               to="/invoices"
               icon={<ReceiptOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
+
 
             <Typography
               variant="h6"
@@ -161,27 +165,38 @@ const Sidebar = () => {
             >
               Virtual Reality
             </Typography>
-            <Item
+            
+            <SidebarItem
               title="Profile Form"
               to="/form"
               icon={<PersonOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
+            <SidebarItem
               title="Calendar"
               to="/calendar"
               icon={<CalendarTodayOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
+
+        
+            <Typography
+              variant="h6"
+              color={colors.grey[300]}
+              sx={{ m: "15px 0 5px 20px" }}
+            >
+              Smart Hospital
+            </Typography>
+            <SidebarItem
               title="FAQ Page"
               to="/faq"
               icon={<HelpOutlineOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
+
 
             <Typography
               variant="h6"
@@ -190,28 +205,28 @@ const Sidebar = () => {
             >
               Charts
             </Typography>
-            <Item
+            <SidebarItem
               title="Bar Chart"
               to="/bar"
               icon={<BarChartOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
+            <SidebarItem
               title="Pie Chart"
               to="/pie"
               icon={<PieChartOutlineOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
+            <SidebarItem
               title="Line Chart"
               to="/line"
               icon={<TimelineOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
+            <SidebarItem
               title="Geography Chart"
               to="/geography"
               icon={<MapOutlinedIcon />}
@@ -219,6 +234,7 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
           </Box>
+
         </Menu>
       </ProSidebar>
     </Box>
