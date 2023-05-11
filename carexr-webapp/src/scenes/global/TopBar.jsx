@@ -20,7 +20,7 @@ const list = [{
     key:"uuid"
 }];
 
-const TopBar = () => {
+const TopBar = (auth) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const colorMode = useContext(ColorModeContext);
@@ -29,52 +29,52 @@ const TopBar = () => {
     useEffect(()=>{
         setOrganizationsList(list)
 	}, [])
-
-    return (<>
-    <Box display="flex" justifyContent="space-between" pb={2}>
-
-        {/* Searc   h Bar */}
-        <Box 
-            display="flex" 
-            backgroundColor={colors.primary[400]} 
-            borderRadius="3px"
-            sx={{ m:"12px 0"}}
-        >
-            <InputBase
-                sx={{ ml: 2, flex: 1}}
-                placeholder="Search"
-            >
-            </InputBase>
-
-            <IconButton type="button" sx={{ p: 1 }}>
-                <SearchIcon/>
-            </IconButton>
-
-        </Box>
-
-        {/* Icons Section*/}
-        <Box display="flex" alignItems={"center"}>
-            <MultipleSelectPlaceholder placeholder={"Organization"} options={organizationsList} />
-            <IconButton onClick={colorMode.toggleColorMode}>
-                {theme.palette.colorMode === 'dark' ? (
-                    <DarkModeOutlinedIcon/>
-                ) : (
-                    <LightModeOutlinedIcon/>
-                )}
-            </IconButton>
-            <IconButton>
-                <NotificationsOutlinedIcon/>
-            </IconButton>
-            <IconButton>
-                <SettingsOutlinedIcon/>
-            </IconButton>
-            <IconButton>
-                <PersonOutlinedIcon/>
-            </IconButton>
-        </Box>
-
-    </Box>
     
+    return (<>
+    {auth["isAuthenticated"] &&
+    <>
+        <Box display="flex" justifyContent="space-between" pb={2}>
+
+        
+            <Box 
+                display="flex" 
+                backgroundColor={colors.primary[400]} 
+                borderRadius="3px"
+                sx={{ m:"12px 0"}}
+            >
+                <InputBase
+                    sx={{ ml: 2, flex: 1}}
+                    placeholder="Search"
+                >
+                </InputBase>
+
+                <IconButton type="button" sx={{ p: 1 }}>
+                    <SearchIcon/>
+                </IconButton>
+
+            </Box>
+
+            <Box display="flex" alignItems={"center"}>
+                <MultipleSelectPlaceholder placeholder={"Organization"} options={organizationsList} />
+                <IconButton onClick={colorMode.toggleColorMode}>
+                    {theme.palette.colorMode === 'dark' ? (
+                        <DarkModeOutlinedIcon/>
+                    ) : (
+                        <LightModeOutlinedIcon/>
+                    )}
+                </IconButton>
+                <IconButton>
+                    <NotificationsOutlinedIcon/>
+                </IconButton>
+                <IconButton>
+                    <SettingsOutlinedIcon/>
+                </IconButton>
+                <IconButton>
+                    <PersonOutlinedIcon/>
+                </IconButton>
+            </Box>
+        </Box>
+    </>}
     </>);
 }
 
