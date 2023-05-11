@@ -17,56 +17,9 @@ const Login = () => {
   const colors = tokens(theme.palette.mode);
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
-  const [error, setError] = useState("");
-  const signIn = useSignIn();
-
   const handleFormSubmit = (values) => {
     console.log(values);
-
-    try {
-        const options = {
-            method: 'POST',
-            url: 'http://54.229.220.82/api/',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            data: {
-                query: `query ($email: String!, $password: String!) { MemberLogin (loginCredentials: { email: $email, password: $password } ) { ... on Member { uuid, name, username, email, token MemberOf { role institution { uuid name } } } } }`,
-                variables: {
-                   email: "caregiver@carexr.com",
-                   password: "password"
-                }
-            },
-            withCredentials: false,
-            
-        };
-        
-        axios
-            .request(options)
-            .then(function (response) {
-                console.log(response.data); // Response
-            })
-            .catch(function (error) {
-                console.error(error);
-            });
-        
-      /*
-      signIn({
-        token: response.data.token,
-        expiresIn: 3600,
-        tokenType: "Bearer",
-        authState: { email: values.email },
-      });
-      */
-    } catch (err) {
-      if (err && err instanceof AxiosError)
-        setError(err.response?.data.message);
-      else if (err && err instanceof Error) setError(err.message);
-
-      console.log("Error: ", err);
-    }
   };
-  
 
   return (
     <Box display={"flex"}
