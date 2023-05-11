@@ -11,14 +11,57 @@ import axios, { AxiosError } from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useLogin } from "../../hooks/graphql/query/useLogin";
 
 const Login = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
+  const {error, loading, data} = useLogin("caregiver@carexr.com", "password")
+console.log(data)
   const handleFormSubmit = (values) => {
     console.log(values);
+
+    try {
+
+        /*
+        fetch('http://54.229.220.82/api', {
+            method: 'POST',
+            body: `
+            query {
+                MemberLogin (loginCredentials: { email: "${values["email"]}", password: "${values["password"]}" } ) { 
+                    ... on Member { 
+                        uuid, 
+                        name, 
+                        username, 
+                        email, 
+                        token 
+                        MemberOf { 
+                            role 
+                            institution { 
+                                uuid 
+                                name 
+                            } 
+                        } 
+                    } 
+                }
+            }
+        `,
+            header: {
+                'Content-Type': 'application/json',
+
+            }
+
+        }
+        
+        );
+        */
+
+    } catch {
+
+    }
+
   };
 
   return (

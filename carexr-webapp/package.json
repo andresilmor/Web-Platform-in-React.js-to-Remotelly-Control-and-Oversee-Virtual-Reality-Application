@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@apollo/client": "^3.7.14",
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
     "@fullcalendar/core": "^6.1.7",
@@ -24,6 +25,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.4.0",
     "formik": "^2.2.9",
+    "graphql": "^16.6.0",
     "react": "^18.2.0",
     "react-auth-kit": "^2.12.2",
     "react-dom": "^18.2.0",
