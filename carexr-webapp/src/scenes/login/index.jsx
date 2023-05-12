@@ -2,154 +2,218 @@ import { Box, useTheme, Button, TextField, Typography } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { Formik } from "formik";
 import * as yup from "yup";
-import Header from "../../components/Header";
 import { tokens } from "../../theme";
 
 import { useSignIn } from "react-auth-kit";
 import { useFormik } from "formik";
 import axios, { AxiosError } from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useLogin } from "../../hooks/graphql/query/useLogin";
+import { saveUser } from "../../redux/slices/userSlice";
+import { useDispatch } from "react-redux";
 
 const Login = () => {
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
-  const isNonMobile = useMediaQuery("(min-width:600px)");
+    const theme = useTheme();
+    const colors = tokens(theme.palette.mode);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-  const {error, loading, data} = useLogin("caregiver@carexr.com", "password")
-console.log(data)
-  const handleFormSubmit = (values) => {
-    console.log(values);
+    const isNonMobile = useMediaQuery("(min-width:600px)");
 
-    try {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loginStatus, setLoginStatus] = useState("");
 
-        /*
-        fetch('http://54.229.220.82/api', {
-            method: 'POST',
-            body: `
-            query {
-                MemberLogin (loginCredentials: { email: "${values["email"]}", password: "${values["password"]}" } ) { 
-                    ... on Member { 
-                        uuid, 
-                        name, 
-                        username, 
-                        email, 
-                        token 
-                        MemberOf { 
-                            role 
-                            institution { 
-                                uuid 
-                                name 
+    var [doLogin, {loading, error, data, called}] = useLogin(email, password);
+    const signIn = useSignIn();
+
+    const handleFormSubmit = (values) => {
+        console.log(values);
+
+        try {
+            setLoginStatus("Validating...");
+            doLogin();
+            
+            console.log("2:", loading, error, data, called);
+            /*
+            fetch('http://54.229.220.82/api', {
+                method: 'POST',
+                body: `
+                query {
+                    MemberLogin (loginCredentials: { email: "${values["email"]}", password: "${values["password"]}" } ) { 
+                        ... on Member { 
+                            uuid, 
+                            name, 
+                            username, 
+                            email, 
+                            token 
+                            MemberOf { 
+                                role 
+                                institution { 
+                                    uuid 
+                                    name 
+                                } 
                             } 
                         } 
-                    } 
+                    }
                 }
-            }
-        `,
-            header: {
-                'Content-Type': 'application/json',
+            `,
+                header: {
+                    'Content-Type': 'application/json',
+
+                }
 
             }
+            
+            );
+            */
+
+        } catch {
+            setLoginStatus("Connection Error");
 
         }
-        
-        );
-        */
+    };
 
-    } catch {
+    useEffect(() => {
+        if (called && !loading) {
+            if (data["MemberLogin"].hasOwnProperty("message"))
+                setLoginStatus("Invalid");
+            else {
+                signIn({
+                    token: data["MemberLogin"]["token"],
+                    expiresIn: 1440,
+                    tokenType: "Bearer",
+                    authState: {
+                        email: data["MemberLogin"]["email"],
+                        uuid: data["MemberLogin"]["uuid"]
+                    }
+                });
 
-    }
+                var memberOf = [];
 
-  };
+                data["MemberLogin"]["MemberOf"].forEach((value) => {
+                    memberOf.push({
+                        name: value["institution"]["name"],
+                        uuid: value["institution"]["uuid"],
+                        role: value["role"],
+                        selected: false
+                    })
+                });
 
-  return (
-    <Box display={"flex"}
-    justifyContent={"center"}
-    alignItems={"center"}
-    flexWrap={"wrap"}
-    height={"88%"}
-   >
-        
-        <Formik
-            onSubmit={handleFormSubmit}
-            initialValues={initialValues}
-            validationSchema={checkoutSchema}
-        >
-            {({
-            values,
-            errors,
-            touched,
-            handleBlur,
-            handleChange,
-            handleSubmit,
-            }) => (
-            <form onSubmit={handleSubmit}>
-                <Box >
-                    <Typography variant="h1" color={colors.grey[100]} fontWeight="bold" sx={{ m: "0 0 8px 0" }} textAlign={"center"}>
-                        CareXR
-                    </Typography>
-                    <Typography variant="h2" color={colors.greenAccent[400]} sx={{ m: "0 0 42px 0" }} textAlign={"center"}>
-                        Web Platform
-                    </Typography>
-                </Box>
-                <Box>
+                console.log(memberOf)
 
-                    <TextField
-                        fullWidth
-                        variant="filled"
-                        type="text"
-                        label="Email"
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        value={values.email}
-                        name="email"
-                        error={!!touched.firstName && !!errors.firstName}
-                        helperText={touched.firstName && errors.firstName}
-                        
-                        sx={{marginBottom: "24px"}}
-                    />
-                    
-                    <TextField
-                        fullWidth
-                        variant="filled"
-                        type="password"
-                        label="Password"
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        value={values.password}
-                        name="password"
-                        error={!!touched.password && !!errors.password}
-                        helperText={touched.password && errors.password}
-                
-                    />
-                
-                
-                </Box>
-                <Box display="flex" justifyContent="center" mt="32px">
-                    <Button type="submit" color="secondary" variant="contained">
-                        Login
-                    </Button>
-                </Box>
+                dispatch(saveUser({
+                    name: data["MemberLogin"]["name"],
+                    memberOf: memberOf
+                }));
+
+                navigate("/");
+            }
+            console.log(data["MemberLogin"]);
+
+        }
+    },[loading]) 
+
+    useEffect(()=>{
+        setLoginStatus("Login");
+        console.log("1:", loading, error, data, called);
+    }, [])
+
+    return (
+        <Box display={"flex"}
+        justifyContent={"center"}
+        alignItems={"center"}
+        flexWrap={"wrap"}
+        height={"88%"}
+    >
             
-            </form>
-        )}
-        </Formik>
-    </Box>
-  );
-};
+            <Formik
+                onSubmit={handleFormSubmit}
+                initialValues={initialValues}
+                validationSchema={checkoutSchema}
+            >
+                {({
+                values,
+                errors,
+                touched,
+                handleBlur,
+                handleChange,
+                handleSubmit,
+                }) => (
+                <form onSubmit={handleSubmit}>
+                    <Box >
+                        <Typography variant="h1" color={colors.grey[100]} fontWeight="bold" sx={{ m: "0 0 8px 0" }} textAlign={"center"}>
+                            CareXR
+                        </Typography>
+                        <Typography variant="h2" color={colors.greenAccent[400]} sx={{ m: "0 0 42px 0" }} textAlign={"center"}>
+                            Web Platform
+                        </Typography>
+                    </Box>
+                    <Box>
 
-const phoneRegExp =
-  /^((\+[1-9]{1,4}[ -]?)|(\([0-9]{2,3}\)[ -]?)|([0-9]{2,4})[ -]?)*?[0-9]{3,4}[ -]?[0-9]{3,4}$/;
+                        <TextField
+                            fullWidth
+                            variant="filled"
+                            type="text"
+                            label="Email"
+                            onBlur={handleBlur}
+                            onChange={(e) => {
+                                handleChange(e)
+                                setEmail(e.target.value)
+                            }}
+                            value={values.email}
+                            name="email"
+                            error={!!touched.email && !!errors.email}
+                            helperText={touched.email && errors.email}
+                            
+                            sx={{marginBottom: "24px"}}
+                        />
+                        
+                        <TextField
+                            fullWidth
+                            variant="filled"
+                            type="password"
+                            label="Password"
+                            onBlur={handleBlur}
+                            onChange={(e) => {
+                                handleChange(e)
+                                setPassword(e.target.value)
+                            }}
+                            value={values.password}
+                            name="password"
+                            error={!!touched.password && !!errors.password}
+                            helperText={touched.password && errors.password}
+                    
+                        />
+                    
+                    
+                    </Box>
+                    <Box display="flex" justifyContent="center" mt="32px">
+                        <Button type="submit" color="secondary" variant="contained">
+                            {loginStatus}
+                        </Button>
+                    </Box>
+                
+                </form>
+            )}
+            </Formik>
+        </Box>
+    );
+    };
 
-const checkoutSchema = yup.object().shape({
-  email: yup.string().email("invalid email").required("required"),
-  password: yup.string().required("required"),
-});
-const initialValues = {
-  email: "",
-  password: "",
+    const phoneRegExp =
+    /^((\+[1-9]{1,4}[ -]?)|(\([0-9]{2,3}\)[ -]?)|([0-9]{2,4})[ -]?)*?[0-9]{3,4}[ -]?[0-9]{3,4}$/;
+
+    const checkoutSchema = yup.object().shape({
+    email: yup.string().email("invalid email").required("required"),
+    password: yup.string().required("required"),
+    });
+    const initialValues = {
+    email: "",
+    password: "",
+
 };
 
 export default Login;

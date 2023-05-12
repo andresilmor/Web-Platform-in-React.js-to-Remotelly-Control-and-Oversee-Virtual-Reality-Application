@@ -1,4 +1,4 @@
-import { useQuery, gql } from "@apollo/client";
+import { useLazyQuery, gql } from "@apollo/client";
 
 
 const LOGIN_QUERY = gql`
@@ -26,17 +26,21 @@ const LOGIN_QUERY = gql`
   `
 
 export const useLogin = (email, password) => {
-    const {error, loading, data} = useQuery(
+    const [method, {loading, error, data, called}] = useLazyQuery(
         LOGIN_QUERY, {
           variables: {
             email, password
-          }
+          },
+          fetchPolicy: 'network-only',
         }
       );
 
-    return {
+    return [
+        method, {
         error,
         loading,
-        data
-    }
+        data,
+        called
+      }
+    ]
 }

@@ -26,7 +26,7 @@ function getStyles(name, optionValue, theme) {
   };
 }
 
-const MultipleSelectPlaceholder = ({ placeholder, options, isMultiple }) => {
+const MultipleSelectPlaceholder = ({ placeholder, options, isMultiple, selected }) => {
   const theme = useTheme();
   const [optionValue, setOptionValue] = React.useState([]);
 
@@ -71,6 +71,10 @@ const MultipleSelectPlaceholder = ({ placeholder, options, isMultiple }) => {
             <MenuItem
               key={option.key}
               value={option.value}
+              selected= {(option.key == selected) &&
+                  true
+               
+              }
               style={getStyles(option.value, optionValue, theme)}
             >
               {option.value}

@@ -4,6 +4,7 @@ import { Box, IconButton, Typography, Avatar, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
 import "react-pro-sidebar/dist/css/styles.css";
 import { tokens } from "../../theme";
+import { useSelector } from "react-redux";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
@@ -41,6 +42,8 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
 
+  const { name } = useSelector((state) => state.user)
+  
   return (
     <Box
       sx={{
@@ -107,7 +110,7 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0" }}
                 >
-                  Name
+                  {name}
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
                   Role
@@ -135,28 +138,7 @@ const Sidebar = () => {
               Account
             </Typography>
 
-            <SidebarItem
-              title="Manage Team"
-              to="/team"
-              icon={<PeopleOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <SidebarItem
-              title="Contacts Information"
-              to="/contacts"
-              icon={<ContactsOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <SidebarItem
-              title="Invoices Balances"
-              to="/invoices"
-              icon={<ReceiptOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-
+            
 
             <Typography
               variant="h6"
@@ -165,22 +147,7 @@ const Sidebar = () => {
             >
               Virtual Reality
             </Typography>
-            
-            <SidebarItem
-              title="Profile Form"
-              to="/form"
-              icon={<PersonOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <SidebarItem
-              title="Calendar"
-              to="/calendar"
-              icon={<CalendarTodayOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-
+           
         
             <Typography
               variant="h6"
@@ -189,50 +156,7 @@ const Sidebar = () => {
             >
               Smart Hospital
             </Typography>
-            <SidebarItem
-              title="FAQ Page"
-              to="/faq"
-              icon={<HelpOutlineOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-
-
-            <Typography
-              variant="h6"
-              color={colors.grey[300]}
-              sx={{ m: "15px 0 5px 20px" }}
-            >
-              Charts
-            </Typography>
-            <SidebarItem
-              title="Bar Chart"
-              to="/bar"
-              icon={<BarChartOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <SidebarItem
-              title="Pie Chart"
-              to="/pie"
-              icon={<PieChartOutlineOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <SidebarItem
-              title="Line Chart"
-              to="/line"
-              icon={<TimelineOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <SidebarItem
-              title="Geography Chart"
-              to="/geography"
-              icon={<MapOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
+            
           </Box>
 
         </Menu>
