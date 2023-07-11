@@ -6,24 +6,18 @@ import "react-pro-sidebar/dist/css/styles.css";
 import { tokens } from "../../theme";
 import { useSelector } from "react-redux";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
-import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
-import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
-import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
-import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
-import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
-import PieChartOutlineOutlinedIcon from "@mui/icons-material/PieChartOutlineOutlined";
-import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
+import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faVrCardboard } from '@fortawesome/free-solid-svg-icons'
 
 const SidebarItem = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   return (
     <MenuItem
-      active={selected === title}
+      active={selected.toLowerCase().replace(" ", "-") === title.toLowerCase().replace(" ", "-")}
       style={{
         color: colors.grey[100],
       }}
@@ -36,14 +30,14 @@ const SidebarItem = ({ title, to, icon, selected, setSelected }) => {
   );
 };
 
+
 const Sidebar = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [selected, setSelected] = useState("Dashboard");
+  const [selected, setSelected] = useState(window.location.pathname.slice(1) != "" ? window.location.pathname.slice(1) : "dashboard");
+  const { user } = useSelector((state) => state)
 
-  const { name } = useSelector((state) => state.user)
-  
   return (
     <Box
       sx={{
@@ -110,10 +104,10 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0" }}
                 >
-                  {name}
+                  {user.name}
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
-                  Role
+                  {user.selectedOrganization.name}
                 </Typography>
               </Box>
             </Box>
@@ -129,6 +123,7 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
 
+            {/* ------------------ ACCOUNT ------------------ */}
 
             <Typography
               variant="h6"
@@ -138,7 +133,16 @@ const Sidebar = () => {
               Account
             </Typography>
 
-            
+            <SidebarItem
+              title="QRCode Login"
+              to="/qrcode-login"
+              icon={<VpnKeyOutlinedIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+
+            {/* ------------------ VIRTUAL REALITY ------------------ */}
 
             <Typography
               variant="h6"
@@ -147,7 +151,16 @@ const Sidebar = () => {
             >
               Virtual Reality
             </Typography>
+
+            <SidebarItem
+              title="VR Sesssion"
+              to="/vr-session"
+              icon={<FontAwesomeIcon icon={faVrCardboard} />}
+              selected={selected}
+              setSelected={setSelected}
+            />
            
+            {/* ------------------ SMART HOSPITAL ------------------ */}
         
             <Typography
               variant="h6"

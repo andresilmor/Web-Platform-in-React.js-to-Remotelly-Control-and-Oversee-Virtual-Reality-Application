@@ -26,15 +26,19 @@ function getStyles(name, optionValue, theme) {
   };
 }
 
-const MultipleSelectPlaceholder = ({ placeholder, options, isMultiple, selected }) => {
+const MultipleSelectPlaceholder = ({ placeholder, options, isMultiple, selected, action = null }) => {
   const theme = useTheme();
-  const [optionValue, setOptionValue] = React.useState([]);
+  const [optionValue, setOptionValue] = React.useState([selected]);
 
-  const handleChange = (event) => {
+  const handleChange = (event, key) => {
     const {
       target: { value },
     } = event;
-    setOptionValue(
+    
+    if (action != null)
+      action(value, key["key"].replace(".1:$", ""))
+
+    setOptionValue( 
       // On autofill we get a stringified value.
       typeof value === 'string' ? value.split(',') : value,
     );
@@ -71,10 +75,6 @@ const MultipleSelectPlaceholder = ({ placeholder, options, isMultiple, selected 
             <MenuItem
               key={option.key}
               value={option.value}
-              selected= {(option.key == selected) &&
-                  true
-               
-              }
               style={getStyles(option.value, optionValue, theme)}
             >
               {option.value}

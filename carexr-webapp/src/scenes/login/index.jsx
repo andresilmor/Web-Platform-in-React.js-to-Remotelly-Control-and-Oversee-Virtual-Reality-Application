@@ -38,7 +38,7 @@ const Login = () => {
             
             console.log("2:", loading, error, data, called);
             /*
-            fetch('http://54.229.220.82/api', {
+            fetch('http://34.244.82.96/api', {
                 method: 'POST',
                 body: `
                 query {
@@ -86,8 +86,7 @@ const Login = () => {
                     expiresIn: 1440,
                     tokenType: "Bearer",
                     authState: {
-                        email: data["MemberLogin"]["email"],
-                        uuid: data["MemberLogin"]["uuid"]
+                        email: data["MemberLogin"]["email"]
                     }
                 });
 
@@ -98,15 +97,17 @@ const Login = () => {
                         name: value["institution"]["name"],
                         uuid: value["institution"]["uuid"],
                         role: value["role"],
-                        selected: false
                     })
                 });
+
+                memberOf[0]["selected"] = true
 
                 console.log(memberOf)
 
                 dispatch(saveUser({
                     name: data["MemberLogin"]["name"],
-                    memberOf: memberOf
+                    memberOf: memberOf,
+                    selectedOrganization: memberOf[0]
                 }));
 
                 navigate("/");

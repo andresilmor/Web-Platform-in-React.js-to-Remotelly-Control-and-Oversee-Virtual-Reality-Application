@@ -7,7 +7,11 @@ import SideBar from "./scenes/global/SideBar";
 
 import Dashboard from "./scenes/dashboard";
 import Login from "./scenes/login";
+
+import QRCodeAuth from "./scenes/qrcode-auth";
+
 import { RequireAuth, useIsAuthenticated } from "react-auth-kit";
+import VRSession from "./scenes/vr-session";
 
 
 function App() {
@@ -21,24 +25,49 @@ function App() {
             <div className="app">
               {isAuthenticated() &&
                 <SideBar />
+
               }
 
               <main className="content" >
                 
                 {isAuthenticated() &&
                   <TopBar isAuthenticated={isAuthenticated()} />
+
                 }
                 
                 <Routes>
-                  <Route path="/" element={
-                    <RequireAuth loginPath="/login">
-                      <Dashboard /> 
-                    </RequireAuth>
-                  } />
+                  
+                  {isAuthenticated() && <>
+                    <Route path="/" element={
+                      <RequireAuth loginPath="/login">
+                        <Dashboard /> 
+                      </RequireAuth>
+                    } />
 
-                  {!isAuthenticated() &&
+                    <Route path="/qrcode-login" element={
+                      <RequireAuth loginPath="/login">
+                        <QRCodeAuth /> 
+                      </RequireAuth>
+                    } />
+                    
+                    <Route path="/vr-session" element={
+                      <RequireAuth loginPath="/vr/session">
+                        <VRSession /> 
+                      </RequireAuth>
+                    } />
+
+
+                    <Route path="*" element={<Dashboard />} />
+                    
+                  </>}
+
+                  {!isAuthenticated() && <>
                     <Route path="/login" element={<Login />} />
-                  }
+                    <Route path="*" element={<Login />} />
+                    
+                  </>}
+
+                  
                   
                 </Routes>
               </main>

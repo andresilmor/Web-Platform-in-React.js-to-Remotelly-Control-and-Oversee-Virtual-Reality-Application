@@ -32,13 +32,24 @@ const TopBar = () => {
     const memberOf = [];
 
     
+    const { user } = useSelector((state) => state)
+
     const list = [];
-    list.push({
-        value: "dsa",
-        key: "dasd"
-    })
+    
+    var settingList = true;
 
     useEffect(()=>{
+        if (!settingList)
+            return
+
+        for (let index = 0; index < user.memberOf.length; index += 1) {
+            list.push({
+                value: user.memberOf[index].name,
+                key: user.memberOf[index].uuid
+            })
+
+        }
+
         memberOf.forEach((value) => {
             list.push({
                 value: value.name,
@@ -48,8 +59,8 @@ const TopBar = () => {
 
         setOrganizationsList(list);
         setSelected(list[0].key);
-
-	})
+        settingList = 0;
+	}, [])
 
     const logout = () => {
         signOut();
@@ -82,7 +93,9 @@ const TopBar = () => {
 
             <Box display="flex" >
             <Box display="flex" alignItems={"center"}>
-                <MultipleSelectPlaceholder placeholder={"Organization"} options={organizationsList} selected={selectedKey} sx={{ marginInline:"4px "}} />
+                <MultipleSelectPlaceholder placeholder={"Organization"} options={organizationsList} selected={user.selectedOrganization.name} action={(value, key) => {
+                    console.log(value + " | " + key)
+                }} sx={{ marginInline:"4px "}} />
                 
                 <IconButton sx={{ marginInline:"2px "}}>
                     <NotificationsOutlinedIcon/>

@@ -6,34 +6,35 @@ const userInitialState =  {
             name: null,
             uuid: null,
             role: null,
-            selected: null
         }],
+        selectedOrganization: {
+            uuid: null,
+            name: null,
+            role: null
+        },
    
 }
 
 const userSlice = createSlice({
     name: "user",
-    initialState: {
-        name: "",
-        memberOf: [{
-            name: "",
-            uuid: "",
-            role: "",
-            selected: ""
-        }],
-   
-},
+    initialState: userInitialState,
     reducers: {
         saveUser: (state, action) => {
-            console.log("yo ", action.payload)
             state.name = action.payload["name"];
-            console.log("yo ", state.name)
+            state.memberOf = action.payload["memberOf"];
+            state.selectedOrganization = action.payload["selectedOrganization"];
+
         },
         resetUser: (state) => {
             state = null;
         },
+        setActiveOrganization: (state, action) => {
+            state.activeOrganization = action.payload["activeOrganization"];
+
+        }
+
     },
 });
 
-export const { saveUser, resetUser} = userSlice.actions;
+export const { saveUser, resetUser, setActiveOrganization} = userSlice.actions;
 export default userSlice.reducer;
