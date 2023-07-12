@@ -7,6 +7,7 @@ import useWebSocket from 'react-use-websocket';
 import Cookies from 'js-cookie';
 import { useAuthUser } from "react-auth-kit";
 import VRSession_StartScreen from "./start-screen";
+import VRSession_SelectMenu from "./select-menu";
 
 
 const VRSession = () => {
@@ -15,14 +16,17 @@ const VRSession = () => {
   
     const [wsRoute, setWsRoute] = useState(null);
     const [wsChannel, setWsChannel] = useState("");
+    const [onMessageLogic, setOnMessageLogin] = useState(null);
     
+
     const [sessionId, setSessionId] = useState("");
+    const [sessionType, setSessionType] = useState("");
 
     const [status, setStatus] = useState("disconnected");
 
     const auth = useAuthUser();
     
-    
+    const [message, setMessage] = useState(null)
   
     const {
         sendMessage,
@@ -38,12 +42,14 @@ const VRSession = () => {
         },
         onMessage: (event) => {
           let data = JSON.parse(event.data)
-          setStatus("connected")
           console.log(data)
+          setMessage(data)
     
         },
         onClose: () => {
+          setMessage(null)
           setStatus("disconnected")
+          console.log("Disconnected")
           setStartCountdown(false)
           setWsRoute(null)
         
@@ -92,11 +98,10 @@ const VRSession = () => {
  
     return (
         <>
-        {status == "disconnected" &&
-            <VRSession_StartScreen  wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sendMessage={sendMessage}></VRSession_StartScreen>
-        }
-        {status == "connected" &&
-            <h1>yo</h1>
+        {status == "disconnected" ?
+            <VRSession_StartScreen message={message} setStatus={setStatus} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sendMessage={sendMessage} />
+        : status == "connected" &&
+            <VRSession_SelectMenu  message={message} setStatus={setStatus} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} />
         }
         </>
       );

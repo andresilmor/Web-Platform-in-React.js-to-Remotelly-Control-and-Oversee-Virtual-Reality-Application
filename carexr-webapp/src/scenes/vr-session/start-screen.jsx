@@ -8,26 +8,36 @@ import Cookies from 'js-cookie';
 import { useAuthUser } from "react-auth-kit";
 
 
-const VRSession_StartScreen = params => {
+const VRSession_StartScreen = props => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
   
-    
+    useEffect(() => {
+      if (props.message == null)
+        return
+      console.log("Start Screen: " + props.message)
+      if (props.message["state"] == "connected") {
+        console.log(props.message)
+        props.setStatus("connected")
+      }
+
+      
+    }, [props.message]);
 
     const onSessionIdChange = (e) => {
-        params.setSessionId(e.target.value)
+        props.setSessionId(e.target.value)
         
     }
 
     const connectSession = async () => { 
-        console.log(params.sessionId)
-        params.setWsRoute(null)
-        params.setWsRoute("ws://34.244.43.25/ws/vr/heal/session")
+        console.log(props.sessionId)
+        props.setWsRoute(null)
+        props.setWsRoute("ws://34.244.43.25/ws/vr/heal/session")
         
-        params.setWsChannel(params.sessionId)
-        params.sendMessage(JSON.stringify({
+        props.setWsChannel(props.sessionId)
+        props.sendMessage(JSON.stringify({
             state: "connecting",            
-            channel: params.sessionId,
+            channel: props.sessionId,
           }))  
      
     }
@@ -36,10 +46,10 @@ const VRSession_StartScreen = params => {
       <Box sx={{ marginInline: "24px" }}>
         <Header
           title="VR Session"
-          subtitle="Controle remotely Virtual Reality sessions, to minimize pacients discomfort"
+          subtitle="Control remotely Virtual Reality sessions, to minimize pacients discomfort"
         />
   
-        <Grid container spacing={2} xs={2}>
+        <Grid item container spacing={2} xs={2}>
           <Grid item container  xs={12}>
             <Grid item  xs={6}>
                 <TextField
@@ -74,10 +84,12 @@ const VRSession_StartScreen = params => {
 
           </Grid>
 
-          <Grid item xs={10}>
-         
-          </Grid>
         </Grid>
+
+        <Grid item xs={10}>
+         
+        </Grid>
+        
       </Box>
     );
   };
