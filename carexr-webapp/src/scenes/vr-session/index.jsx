@@ -49,7 +49,6 @@ const VRSession = () => {
         onClose: () => {
           setMessage(null)
           setStatus("disconnected")
-          console.log("Disconnected")
           setStartCountdown(false)
           setWsRoute(null)
         
@@ -91,7 +90,9 @@ const VRSession = () => {
       if (countdown > 0)
         return
       console.log("pinging")
-      sendMessage()
+      sendMessage(JSON.stringify({
+        state: null,            
+      }))
       setCountdown(pingTime)
 
     }, [countdown])

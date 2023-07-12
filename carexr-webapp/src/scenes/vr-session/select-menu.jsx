@@ -13,18 +13,62 @@ const VRSession_SelectMenu = props => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
   
-    const [currentLocation, setCurrentLocation] = useState("start")
- 
-    const goToLocation = async () => { 
-        console.log(props.message)
+    const [currentLocation, setCurrentLocation] = useState("Start")
+    const [locationToggleEnable, setLocationToggleEnable] = useState(true);
 
-        props.message["execute"] = JSON.stringify({
-            entity: props.message["applicationUUID"],
+    useEffect(() => {
+        if (props.message == null)
+          return
+        console.log("Start Screen: " + props.message)
+        if (props.message["state"] == "connected") {
+            console.log("1")
+
+            // -------------------------------------------------------------
+
+            if (props.message["execute"] != null) {
+                console.log("2")
+
+                //-----------------------------------------------------------------------
+
+                if (props.message["execute"]["return"] != null) {
+                    console.log("3")
+                    switch (props.message["execute"]["operation"]) {
+                        
+                        //------------------------------------------------------------------
+                        case "loadScene":
+                            console.log("4")
+                            setLocationToggleEnable(true)
+                            setCurrentLocation(props.message["execute"]["return"]["currentLocation"] == "Lobby" ? "Start" : "Lobby")
+                            break;
+                        //------------------------------------------------------------------
+
+                    }
+                }
+
+            }
+            
+        }
+  
+        
+    }, [props.message]);
+ 
+    const toggleLocation = async () => { 
+        console.log(props.message)
+        if (!locationToggleEnable)
+            return
+            
+        setCurrentLocation("Loading")
+        console.log("Gonna toggle")
+        setLocationToggleEnable(false)
+
+        props.message["execute"] = {
+            requester: props.message["managerUUID"],
+            responder: props.message["applicationUUID"],
             operation: "loadScene",            
             params: {
-                scene: "lobby"
+                scene: currentLocation == "Start" ? "Lobby" : "Start"
             },
-          })
+          }
 
         props.sendMessage(JSON.stringify(props.message))  
         console.log(props.message)
@@ -45,7 +89,7 @@ const VRSession_SelectMenu = props => {
   
             <Box>
             <Button
-                onClick={goToLocation}
+                onClick={toggleLocation}
                 sx={{
                 backgroundColor: colors.blueAccent[700],
                 color: colors.grey[100],
@@ -54,7 +98,7 @@ const VRSession_SelectMenu = props => {
                 padding: "10px 20px",
                 }}
             >
-                Load {currentLocation == "start" ? 'Lobby' : "Start Scene" }
+                {currentLocation == "Start" ? 'Go To Lobby' : currentLocation == "Loading" ? "Loading Lobby..." : "End Session" }
             </Button>
             </Box>
         </Box>
