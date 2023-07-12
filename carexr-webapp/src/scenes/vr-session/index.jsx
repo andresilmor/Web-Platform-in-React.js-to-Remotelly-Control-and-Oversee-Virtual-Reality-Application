@@ -18,7 +18,10 @@ const VRSession = () => {
     
     const [sessionId, setSessionId] = useState("");
 
+    const [status, setStatus] = useState("disconnected");
+
     const auth = useAuthUser();
+    
     
   
     const {
@@ -29,29 +32,74 @@ const VRSession = () => {
         readyState,
         getWebSocket,
       } = useWebSocket(wsRoute, {
-        onOpen: () => {},
+        onOpen: () => {
+          setStartCountdown(true)
+          console.log(true)
+        },
         onMessage: (event) => {
           let data = JSON.parse(event.data)
-  
+          setStatus("connected")
           console.log(data)
     
         },
         onClose: () => {
+          setStatus("disconnected")
+          setStartCountdown(false)
           setWsRoute(null)
         
         },
         share: true,
         //Will attempt to reconnect on all close events, such as server shutting down
-        shouldReconnect: (closeEvent) => false,
+        shouldReconnect: (closeEvent) => true,
         //reconnectAttempts: 10,
         //reconnectInterval: 3000,
       });
 
 
+    const pingTime = 40;
+
+    const [countdown, setCountdown] = useState(pingTime);
+
+    const decreaseCountdown = () => {
+      if (countdown <= 0)
+        console.log("yo")
+        
+      setCountdown((prev) => prev - 1)
+    };
+
+    const [startCountdown, setStartCountdown] = useState(false);
+
+    let intervalRef = useRef();
+
+    useEffect(() => {
+      if (!startCountdown)
+        return;
+
+      intervalRef.current = setInterval(decreaseCountdown, 1000);
+
+
+      return () => clearInterval(intervalRef.current);
+    }, [startCountdown]);
+
+    useEffect(() =>  {
+      if (countdown > 0)
+        return
+      console.log("pinging")
+      sendMessage()
+      setCountdown(pingTime)
+
+    }, [countdown])
  
     return (
-      <VRSession_StartScreen  wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sendMessage={sendMessage}></VRSession_StartScreen>
-    );
+        <>
+        {status == "disconnected" &&
+            <VRSession_StartScreen  wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sendMessage={sendMessage}></VRSession_StartScreen>
+        }
+        {status == "connected" &&
+            <h1>yo</h1>
+        }
+        </>
+      );
   };
   
   export default VRSession;

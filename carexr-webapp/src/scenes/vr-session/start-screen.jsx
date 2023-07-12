@@ -21,7 +21,7 @@ const VRSession_StartScreen = params => {
 
     const connectSession = async () => { 
         console.log(params.sessionId)
-
+        params.setWsRoute(null)
         params.setWsRoute("ws://34.244.43.25/ws/vr/heal/session")
         
         params.setWsChannel(params.sessionId)

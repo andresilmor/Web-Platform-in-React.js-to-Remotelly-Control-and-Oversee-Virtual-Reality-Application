@@ -58,8 +58,8 @@ const QRCodeAuth = () => {
     share: true,
     //Will attempt to reconnect on all close events, such as server shutting down
     shouldReconnect: (closeEvent) => false,
-    //reconnectAttempts: 10,
-    //reconnectInterval: 3000,
+    reconnectAttempts: 10,
+    reconnectInterval: 30,
   });
 
 
