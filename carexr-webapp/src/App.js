@@ -6,6 +6,7 @@ import TopBar from "./scenes/global/TopBar";
 import SideBar from "./scenes/global/SideBar";
 
 import Dashboard from "./scenes/dashboard";
+import Contacts from "./scenes/contacts";
 import Login from "./scenes/login";
 
 import QRCodeAuth from "./scenes/qrcode-auth";
@@ -40,7 +41,7 @@ function App() {
                   {isAuthenticated() && <>
                     <Route path="/" element={
                       <RequireAuth loginPath="/login">
-                        <Dashboard /> 
+                        <Contacts /> 
                       </RequireAuth>
                     } />
 

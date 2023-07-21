@@ -10,7 +10,7 @@ import axios, { AxiosError } from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useLogin } from "../../hooks/graphql/query/useLogin";
+import { MemberLogin } from "../../hooks/graphql/query/MemberLogin";
 import { saveUser } from "../../redux/slices/userSlice";
 import { useDispatch } from "react-redux";
 
@@ -26,7 +26,7 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [loginStatus, setLoginStatus] = useState("");
 
-    var [doLogin, {loading, error, data, called}] = useLogin(email, password);
+    var [doLogin, {loading, error, data, called}] = MemberLogin(email, password);
     const signIn = useSignIn();
 
     const handleFormSubmit = (values) => {
@@ -92,7 +92,7 @@ const Login = () => {
 
                 var memberOf = [];
 
-                data["MemberLogin"]["MemberOf"].forEach((value) => {
+                data["MemberLogin"]["memberOf"].forEach((value) => {
                     memberOf.push({
                         name: value["institution"]["name"],
                         uuid: value["institution"]["uuid"],

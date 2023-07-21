@@ -61,7 +61,7 @@ const VRSession = () => {
       });
 
 
-    const pingTime = 40;
+    const pingTime = 25;
 
     const [countdown, setCountdown] = useState(pingTime);
 
@@ -87,6 +87,7 @@ const VRSession = () => {
     }, [startCountdown]);
 
     useEffect(() =>  {
+      console.log("yo")
       if (countdown > 0)
         return
       console.log("pinging")

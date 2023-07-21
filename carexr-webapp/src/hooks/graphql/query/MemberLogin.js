@@ -1,16 +1,15 @@
 import { useLazyQuery, gql } from "@apollo/client";
 
-
-const LOGIN_QUERY = gql`
+const QUERY = gql`
     query ($email: String!, $password: String!) { 
       MemberLogin (loginCredentials: { email: $email, password: $password } ) { 
         ... on Member { 
-          uuid, 
-          name, 
-          username, 
-          email, 
+          uuid 
+          name 
+          username 
+          email 
           token 
-          MemberOf { 
+          memberOf { 
             role 
             institution { 
               uuid 
@@ -25,9 +24,9 @@ const LOGIN_QUERY = gql`
     }
   `
 
-export const useLogin = (email, password) => {
+export const MemberLogin = (email, password) => {
     const [method, {loading, error, data, called}] = useLazyQuery(
-        LOGIN_QUERY, {
+      QUERY, {
           variables: {
             email, password
           },
