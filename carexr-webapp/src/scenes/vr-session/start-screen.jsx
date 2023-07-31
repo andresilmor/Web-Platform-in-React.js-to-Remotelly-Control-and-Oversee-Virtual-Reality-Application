@@ -18,7 +18,7 @@ const VRSession_StartScreen = props => {
       console.log("Start Screen: " + props.message)
       if (props.message["state"] == "connected") {
         console.log(props.message)
-        props.setStatus("connected")
+        props.setState("connected")
       }
 
       

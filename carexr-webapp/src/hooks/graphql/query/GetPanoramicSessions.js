@@ -1,17 +1,19 @@
 import { useLazyQuery, gql } from "@apollo/client";
 
 const QUERY = gql`
-    query ($institutionID: String, $hotspotID: String, $directedFor: [String], $externalFormat: Boolean) { 
-        Get360Hotspot ( 
+    query ($institutionID: String, $panoramicID: String, $directedFor: [String], $externalFormat: Boolean) { 
+      GetPanoramicSessions ( 
             institutionID: $institutionID, 
-            hotspotID: $hotspotID, 
+            panoramicID: $panoramicID, 
             directedFor: $directedFor 
             externalFormat: $externalFormat
         ) { 
-        ... on Hotspot { 
+        ... on PanoramicSession { 
           uuid
           label 
-          image 
+          imageUID
+          imageHeight
+          imageWidth
           partOf 
           directedFor
           meta {
@@ -21,16 +23,11 @@ const QUERY = gql`
             isActive
           }
           mapping {
-            transform {
-                position {
-                    x
-                    y
-                    z
-                }
-                scale {
-                    width
-                    height
-                }
+            boundingBox {
+              x
+              y
+              width
+              height
             }
             data {
                 alias
@@ -42,11 +39,11 @@ const QUERY = gql`
     }
   `
 
-export const Get360Hotspot = (institutionID, hotspotID, directedFor, externalFormat = true) => {
+export const GetPanoramicSessions = (institutionID, panoramicID, directedFor, externalFormat = true) => {
     const [method, {loading, error, data, called}] = useLazyQuery(
         QUERY, {
           variables: {
-            institutionID, hotspotID, directedFor, externalFormat
+            institutionID, panoramicID, directedFor, externalFormat
           },
           fetchPolicy: 'network-only',
         }

@@ -7,7 +7,7 @@ import useWebSocket from 'react-use-websocket';
 import Cookies from 'js-cookie';
 import { useAuthUser } from "react-auth-kit";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
-import { Get360Hotspot } from "../../hooks/graphql/query/Get360Hotspot";
+import { GetPanoramicSessions } from "../../hooks/graphql/query/GetPanoramicSessions";
 
 
 import { DataGrid,GridToolbar, GridColDef, GridApi, GridCellValue } from "@mui/x-data-grid";
@@ -112,11 +112,11 @@ const VRSession_SelectMenu = props => {
     const [currentLocation, setCurrentLocation] = useState("Start")
     const [locationToggleEnable, setLocationToggleEnable] = useState(true);
 
-    const [hotspotID, setHotspotID] = useState("password");
+    const [panoramicID, setPanoramicID] = useState("password");
     const [directedFor, setDirectedFor] = useState( [""]);
     const [institutionID, setInstitutionID] = useState(user.selectedOrganization.uuid);
       
-    var [getHotspots, {loading, error, data, called}] = Get360Hotspot(institutionID,hotspotID,directedFor);
+    var [getHotspots, {loading, error, data, called}] = GetPanoramicSessions(institutionID,panoramicID,directedFor);
 
 
     const [dataGridType, setDataGridType] = useState("hotspots")
@@ -127,7 +127,7 @@ const VRSession_SelectMenu = props => {
             var content = [] 
 
 
-            data["Get360Hotspot"].forEach((value, index) => {
+            data["GetPanoramicSessions"].forEach((value, index) => {
                 
                 var createDate = new Date( value["meta"]["createdAt"] * 1000)
                 var updateDate = new Date( value["meta"]["updatedAt"] * 1000)
@@ -210,31 +210,9 @@ const VRSession_SelectMenu = props => {
           }
 
           props.sendMessage(JSON.stringify(props.message))   
-        /*
-        if (!locationToggleEnable)
-            return
-            
-        console.log(currentLocation)
-        setCurrentLocation("Loading")
-        console.log("Gonna toggle")
-        setLocationToggleEnable(false)
 
-        props.message["execute"] = {
-            requester: props.message["managerUUID"],
-            responder: props.message["applicationUUID"],
-            operation: "loadScene",            
-            params: {
-                scene: currentLocation == "Start" ? "Lobby" : "Start"
-            },
-          }
-
-        props.sendMessage(JSON.stringify(props.message))  
-        console.log(props.message)
-        /*if (currentLocation == "start")
-            setCurrentLocation("lobby")
-        else
-            setCurrentLocation("start")
-        */
+          props.setState("loading")
+      
     }
     
     const toggleLocation = async () => { 

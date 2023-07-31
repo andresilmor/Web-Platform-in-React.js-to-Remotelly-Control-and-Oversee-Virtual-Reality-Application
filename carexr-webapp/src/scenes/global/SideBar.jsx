@@ -37,6 +37,7 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState(window.location.pathname.slice(1) != "" ? window.location.pathname.slice(1) : "dashboard");
   const { user } = useSelector((state) => state)
+  const { layout } = useSelector((state) => state)
 
   return (
     <Box

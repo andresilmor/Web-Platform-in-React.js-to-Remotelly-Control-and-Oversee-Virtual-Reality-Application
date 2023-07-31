@@ -8,7 +8,10 @@ import Cookies from 'js-cookie';
 import { useAuthUser } from "react-auth-kit";
 import VRSession_StartScreen from "./start-screen";
 import VRSession_SelectMenu from "./select-menu";
-
+import VRSession_Loading from "./loading";
+import VRSession_Panel from "./session-panel";
+import { setSidebarSelection } from "../../redux/slices/layoutSlice";
+import { useDispatch } from "react-redux";
 
 const VRSession = () => {
     const theme = useTheme();
@@ -22,9 +25,13 @@ const VRSession = () => {
     const [sessionId, setSessionId] = useState("");
     const [sessionType, setSessionType] = useState("");
 
-    const [status, setStatus] = useState("disconnected");
+    const [sessionStreamId, setSessionStreamId] = useState("");
+
+    const [state, setState] = useState("running");
 
     const auth = useAuthUser();
+
+    const dispatch = useDispatch();
     
     const [message, setMessage] = useState(null)
   
@@ -48,7 +55,7 @@ const VRSession = () => {
         },
         onClose: () => {
           setMessage(null)
-          setStatus("disconnected")
+          setState("disconnected")
           setStartCountdown(false)
           setWsRoute(null)
         
@@ -66,15 +73,18 @@ const VRSession = () => {
     const [countdown, setCountdown] = useState(pingTime);
 
     const decreaseCountdown = () => {
-      if (countdown <= 0)
-        console.log("yo")
-        
       setCountdown((prev) => prev - 1)
     };
 
     const [startCountdown, setStartCountdown] = useState(false);
 
     let intervalRef = useRef();
+
+    useEffect(() => {
+      dispatch(setSidebarSelection({
+        selection: "dashboard",
+      }));
+    })
 
     useEffect(() => {
       if (!startCountdown)
@@ -87,7 +97,7 @@ const VRSession = () => {
     }, [startCountdown]);
 
     useEffect(() =>  {
-      console.log("yo")
+      
       if (countdown > 0)
         return
       console.log("pinging")
@@ -100,10 +110,14 @@ const VRSession = () => {
  
     return (
         <>
-        {status == "disconnected" ?
-            <VRSession_StartScreen message={message} setStatus={setStatus} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sendMessage={sendMessage} />
-        : status == "connected" &&
-            <VRSession_SelectMenu  message={message} setStatus={setStatus} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} />
+        {state == "disconnected" ?
+            <VRSession_StartScreen message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId}  sendMessage={sendMessage} />
+        : state == "connected" ?
+            <VRSession_SelectMenu  message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId}  sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} />
+        : state == "loading" ?
+            <VRSession_Loading  message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} setSessionStreamId={setSessionStreamId} sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} />
+        : state == "running" &&
+            <VRSession_Panel  message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sessionStreamId={sessionStreamId} setSessionStreamId={setSessionStreamId} sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} />
         }
         </>
       );

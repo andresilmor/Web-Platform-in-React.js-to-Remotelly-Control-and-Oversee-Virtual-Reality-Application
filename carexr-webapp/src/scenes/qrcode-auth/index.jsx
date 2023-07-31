@@ -84,8 +84,7 @@ const QRCodeAuth = () => {
 
 
   const decreaseCountdown = () => {
-    if (countdown <= 0)
-      console.log("yo")
+ 
       
     setCountdown((prev) => prev - 1)
   };
