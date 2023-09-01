@@ -27,13 +27,17 @@ const VRSession = () => {
 
     const [sessionStreamId, setSessionStreamId] = useState("");
 
-    const [state, setState] = useState("running");
+    const [state, setState] = useState("disconnected");
 
     const auth = useAuthUser();
 
     const dispatch = useDispatch();
+
+    const [toPing, setToPing] = useState(true)
     
     const [message, setMessage] = useState(null)
+
+    const [panoramicData, setPanoramicData] = useState({})
   
     const {
         sendMessage,
@@ -68,7 +72,7 @@ const VRSession = () => {
       });
 
 
-    const pingTime = 25;
+    const pingTime = 15;
 
     const [countdown, setCountdown] = useState(pingTime);
 
@@ -100,10 +104,14 @@ const VRSession = () => {
       
       if (countdown > 0)
         return
-      console.log("pinging")
-      sendMessage(JSON.stringify({
-        state: null,            
-      }))
+
+      if (toPing) {
+        
+        console.log("pinging")
+        sendMessage(JSON.stringify({
+          state: null,            
+        }))
+      }
       setCountdown(pingTime)
 
     }, [countdown])
@@ -115,9 +123,9 @@ const VRSession = () => {
         : state == "connected" ?
             <VRSession_SelectMenu  message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId}  sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} />
         : state == "loading" ?
-            <VRSession_Loading  message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} setSessionStreamId={setSessionStreamId} sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} />
+            <VRSession_Loading  message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} setSessionStreamId={setSessionStreamId} sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} setPanoramicData={setPanoramicData} />
         : state == "running" &&
-            <VRSession_Panel  message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sessionStreamId={sessionStreamId} setSessionStreamId={setSessionStreamId} sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} />
+            <VRSession_Panel  message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sessionStreamId={sessionStreamId} setSessionStreamId={setSessionStreamId} sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} panoramicData={panoramicData} setToPing={setToPing} />
         }
         </>
       );

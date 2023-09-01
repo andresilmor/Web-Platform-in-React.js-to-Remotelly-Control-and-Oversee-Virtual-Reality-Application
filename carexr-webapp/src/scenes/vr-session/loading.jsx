@@ -51,6 +51,14 @@ const VRSession_Loading = props => {
                         case "downloadHotspot":
                             if (props.message["execute"]["return"]["loaded"] == true) {
                                 console.log("here ----")
+                                let data = {
+                                    "base64": props.message["execute"]["return"]["imageBase64"],
+                                    "mapping": props.message["execute"]["return"]["mapping"],
+                                    "exerciseEnvUUID": props.message["execute"]["return"]["exerciseEnvUUID"],
+                                    "imageHeight": props.message["execute"]["return"]["imageHeight"],
+                                    "imageWidth": props.message["execute"]["return"]["imageWidth"]
+                                }
+                                props.setPanoramicData(data)
                                 props.setState("running")
                             }
 
