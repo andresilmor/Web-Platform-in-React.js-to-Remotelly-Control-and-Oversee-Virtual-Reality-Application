@@ -43,11 +43,6 @@ const VRSession_SelectMenu = props => {
           flex: 1,
         },
         {
-          field: "createdBy",
-          headerName: "Created By",
-          flex: 1,
-        },
-        {
           field: "createdAt",
           headerName: "Created At",
           flex: 1,

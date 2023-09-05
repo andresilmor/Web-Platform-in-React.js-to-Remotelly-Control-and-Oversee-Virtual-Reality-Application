@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Box, useTheme, Grid, Button, TextField, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Slider, Autocomplete, Box, useTheme, Grid, Button, TextField, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import Header from "../../components/Header";
 import { tokens } from "../../theme";
 import QRCode from "qrcode";
@@ -8,6 +8,14 @@ import Cookies from 'js-cookie';
 import { useAuthUser } from "react-auth-kit";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import { GetPanoramicSessions } from "../../hooks/graphql/query/GetPanoramicSessions";
+
+import Rating, { IconContainerProps } from '@mui/material/Rating';
+import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
+import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
+import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
+import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAltOutlined';
+import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
+import { styled } from '@mui/material/styles';
 
 import {v4 as uuidv4} from 'uuid';
 
@@ -98,7 +106,14 @@ const VRSession_Panel = props => {
     const [streamChannel, setStreamChannel] = useState(null);
     const [streamReceiverUUID, setStreamReceiverUUID] = useState(null);
 
-    const [targetAlias, setTargetAlias] = useState("")
+    const [showLog, setShowLog] = useState(false);
+    const [exerciseLog, setExerciseLog] = useState({})
+
+    const [targetAlias, setTargetAlias] = useState("");
+
+    const [stopState, setStopState] = useState("Stop");
+
+    const [sessionUUID, setSessionUUID] = useState(uuidv4());
 
     const {
         sendMessage,
@@ -113,7 +128,6 @@ const VRSession_Panel = props => {
         },
         onMessage: (event) => {
           let data = JSON.parse(event.data)
-          console.log(data)
           setMessage(data)
     
         },
@@ -132,18 +146,19 @@ const VRSession_Panel = props => {
       });
     
 
-    const startExercise =  () => { 
+    const startExercise = () => { 
 
         let streamChannel = uuidv4()
         let receiverUUID = uuidv4()
 
 
-        setStreamEventSource(new EventSource('http://34.244.43.25/sse/vr/panoramic/session/stream/receiver/' + receiverUUID + "/" + streamChannel))
+        setStreamEventSource(new EventSource('https://8b02-193-136-194-58.ngrok-free.app/sse/vr/panoramic/session/stream/receiver/' + receiverUUID + "/" + streamChannel))
   
         setStreamReceiverUUID(receiverUUID)
         setStreamChannel(streamChannel)
 
         setStartTiming(true)
+        setShowLog(false)
 
         /*
         setWsRoute(null)
@@ -155,7 +170,14 @@ const VRSession_Panel = props => {
         
     }
 
+    const saveExercise = () => {
+
+    }
+
     const runBasicOperation =  (operation) => { 
+        if (operation === "stopExercise")
+            setStartTiming(false)
+        
         props.message["execute"] = {
             requester: props.message["managerUUID"],
             responder: props.message["applicationUUID"],
@@ -163,7 +185,6 @@ const VRSession_Panel = props => {
             params: null,
         }
 
-        console.log(operation)
         props.sendMessage(JSON.stringify(props.message))  
 
     }
@@ -175,7 +196,6 @@ const VRSession_Panel = props => {
         if (props.message["state"] == "running") {
             if (props.message["execute"] != null) {
                 if (props.message["execute"]["return"] != null) {
-                    console.log("3")
                     switch (props.message["execute"]["operation"]) {
                         
                         //------------------------------------------------------------------
@@ -183,7 +203,6 @@ const VRSession_Panel = props => {
                             if (props.message["execute"]["return"]["isPaused"] == true) {
                                 setExerciseState("paused")
                                 setStartTiming(false)
-                                console.log("Pausing Exercise")
 
                             }
 
@@ -210,9 +229,19 @@ const VRSession_Panel = props => {
                         //------------------------------------------------------------------
                         case "stopExercise":
                             if (props.message["execute"]["return"]["hasStopped"] == true) {
-                                setExerciseState("stopped")
-                                setStartTiming(false)
+                                setExerciseState("Checking")
+                                setShowLog(true)
+                                setExerciseLog(props.message["execute"]["return"]["exerciseLog"])
+
+                                exerciseHistoric[exerciseHistoric.length - 1]["log"] = props.message["execute"]["return"]["exerciseLog"]["recognition"]
+                                exerciseHistoric[exerciseHistoric.length - 1]["uuid"] = uuidv4()
+                                exerciseHistoric[exerciseHistoric.length - 1]["duration"] = timing
+                                exerciseHistoric[exerciseHistoric.length - 1]["state"] = "Concluded"
                                 
+                                console.log(exerciseHistoric[exerciseHistoric.length - 1])
+                                 
+                                console.log(sessionUUID)
+                       
                             }
 
                             break;
@@ -237,26 +266,19 @@ const VRSession_Panel = props => {
             
             if (parsedData["state"] == "connected") {
             } else if (parsedData["state"] == "streaming") {
-                console.log("HERE I AM BITCH")
-                console.log(String(parsedData["focusTarget"]))
-                console.log(selectedBox)
-                console.log(selectedBox === parsedData["focusTarget"] )
-                console.log(parsedData["focusState"])
-                console.log(parsedData["focusState"] == false)
                 if (parsedData["focusState"] == false) {
                     console.log("BEING CALLED")
                     setSelectedBox("")
                     setTargetAlias("")
-                    console.log(selectedBox)
-                    console.log("-----------------------")
                     return
 
                 } 
 
+                console.log("Looking at: " + parsedData["focusAlias"])
+
                 setTargetAlias(parsedData["focusAlias"])
                 setSelectedBox(parsedData["focusTarget"])
 
-                console.log(parsedData)
 
             }
 
@@ -266,9 +288,6 @@ const VRSession_Panel = props => {
     }, [streamEventSource]);
 
     useEffect(() => {
-        console.log("------------------------------------------")
-        console.log(selectedBox)
-        console.log("------------------------------------------")
 
     }, [selectedBox])
 
@@ -277,7 +296,7 @@ const VRSession_Panel = props => {
             
 
         } else {
-            startRecord()
+            startStreaming()
 
         }
 
@@ -300,19 +319,17 @@ const VRSession_Panel = props => {
 
     }
 
-    const startRecord = () => { 
+    const startStreaming = () => { 
      
         if (exerciseType != 0 && exerciseLabel.length > 0) {
             var historic = [...exerciseHistoric]
-            console.log(exerciseHistoric)
             historic.push({
-                "Label": exerciseLabel,
-                "Type":  getExerciseTypeExternalValue(exerciseType),
-                "State": "Running"
+                "label": exerciseLabel,
+                "type":  getExerciseTypeExternalValue(exerciseType),
+                "state": "Running"
 
             })
             setExerciseHistoric(historic)
-            console.log(exerciseHistoric)
 
             setExerciseState("running")
 
@@ -326,8 +343,9 @@ const VRSession_Panel = props => {
                     receiverUUID: streamReceiverUUID, 
                     streamChannel: streamChannel
                 },
+                
             }
-            console.log(props.message)
+
             props.sendMessage(JSON.stringify(props.message))  
 
             //props.setToPing(true)
@@ -355,6 +373,70 @@ const VRSession_Panel = props => {
 
     const imageRatio = props.panoramicData["imageWidth"] / props.panoramicData["imageHeight"];
     
+    const columns = [
+        {
+            field: "alias",
+            headerName: "Label / Alias",
+            flex: 0.75,
+            cellClassName: "name-column--cell",
+        }, {
+            field: "focusCount",
+            headerName: "Focus Count",
+            flex: 0.75,
+            cellClassName: "name-column--cell",
+        }, {
+            field: "focusTime",
+            headerName: "Focus Time",
+            flex: 0.75,
+            cellClassName: "name-column--cell",
+            renderCell: (params) => {
+                return secondsToHms(params["row"]["focusTime"])
+            }
+        }
+    ]
+   
+    const options = [
+        { label: 'The Godfather', id: 1 },
+        { label: 'Pulp Fiction', id: 2 },
+      ];
+
+      const StyledRating = styled(Rating)(({ theme }) => ({
+        '& .MuiRating-iconEmpty .MuiSvgIcon-root': {
+          color: theme.palette.action.disabled,
+        },
+      }));
+      function IconContainer(props) {
+        const { value, ...other } = props;
+        return <span {...other}>{customIcons[value].icon}</span>;
+      }
+
+      const customIcons = {
+        1: {
+          icon: <SentimentVeryDissatisfiedIcon color="error" />,
+          label: 'Very Dissatisfied',
+        },
+        2: {
+          icon: <SentimentDissatisfiedIcon color="error" />,
+          label: 'Dissatisfied',
+        },
+        3: {
+          icon: <SentimentSatisfiedIcon color="warning" />,
+          label: 'Neutral',
+        },
+        4: {
+          icon: <SentimentSatisfiedAltIcon color="success" />,
+          label: 'Satisfied',
+        },
+        5: {
+          icon: <SentimentVerySatisfiedIcon color="success" />,
+          label: 'Very Satisfied',
+        },
+      };
+      
+    const [exerciseEvalution, setExerciseEvaluation] = useState(3)
+    function valuetext(value) {
+        return `${value}°C`;
+      }
     return (
       <Box sx={{ marginInline: "24px" }}>
         <Grid container>
@@ -378,7 +460,7 @@ const VRSession_Panel = props => {
                                 
                                 variant="filled"
 
-                                disabled={exerciseState == "Running"}
+                                disabled={exerciseState != "unstarted"}
                                 
                                 onChange={(e) => {
                                     setExerciseLabel(e.target.value)
@@ -396,7 +478,7 @@ const VRSession_Panel = props => {
                                 sx={{
                                     paddingBottom:0.13
                                 }}
-                                disabled={exerciseState == "Running"}
+                                disabled={exerciseState != "unstarted"}
                                 
                                 //value={age}
                                 onChange={(e) => {
@@ -441,9 +523,9 @@ const VRSession_Panel = props => {
                                             height: "100%",
                                             marginRight: "12px"
                                         }}
-                                        onClick={(e) => {runBasicOperation("stopExercise")}}
+                                        onClick={(e) => {runBasicOperation("stopExercise"); setStopState("Stopping"); }}
                                     >
-                                        Stop
+                                        {stopState}
                                     </Button>
                                     <Button
                                         type="submit"
@@ -482,7 +564,7 @@ const VRSession_Panel = props => {
                                             height: "100%",
                                             marginRight: "12px"
                                         }}
-                                        onClick={(e) => {runBasicOperation("saveExercise")}}
+                                        onClick={(e) => {saveExercise()}}
                                     >
                                         Save
                                     </Button>
@@ -506,7 +588,7 @@ const VRSession_Panel = props => {
                     </Box>
                     
                     <Box marginTop={"32px"}>
-                        {exerciseType == 2 && streamChannel != null  &&
+                        {exerciseType == 2 && streamChannel != null && exerciseState == "running"  &&
                         <>
                             <h2><strong>Looking at:</strong> {targetAlias}</h2> 
                           
@@ -516,21 +598,123 @@ const VRSession_Panel = props => {
                     </Box>
                     <Box marginTop={"48px"}>
                         <Box position="relative">
-                            <img src={`${props.panoramicData["base64"]}`} alt="Panoramic" width={"92%"}/>
-                            {props.panoramicData["mapping"].map((box) => (
-                            <Box
-                                key={box.uuid}
-                                //onClick={() => handleBoxClick(box.id)} | ${selectedBox === box.id ? 'red' : 'blue'}
-                                sx={{
-                                    position: 'absolute',
-                                    left: `${((box.boundingBox.x / imageRatio) / 37.4).toFixed(2)}%`,
-                                    top: `${((box.boundingBox.y / imageRatio) / 17.3).toFixed(2)}%`,
-                                    width: `${((box.boundingBox.width / imageRatio) / 40).toFixed(2)}%`,
-                                    height: `${((box.boundingBox.height / imageRatio) / 17.5).toFixed(2)}%`,
-                                    border: `2px solid ${selectedBox === box.uuid ? '#1bfc06' : '#FF0000'}`,
-                                }}
-                            />
-                        ))}
+                            {showLog == false ? 
+                                <>
+                                <img src={`${props.panoramicData["base64"]}`} alt="Panoramic" width={"92%"}/>
+                                {props.panoramicData["mapping"].map((box) => (
+                                <Box
+                                    key={box.uuid}
+                                    //onClick={() => handleBoxClick(box.id)} | ${selectedBox === box.id ? 'red' : 'blue'}
+                                    sx={{
+                                        position: 'absolute',
+                                        left: `${((box.boundingBox.x / imageRatio) / 37.4).toFixed(2)}%`,
+                                        top: `${((box.boundingBox.y / imageRatio) / 17.3).toFixed(2)}%`,
+                                        width: `${((box.boundingBox.width / imageRatio) / 40).toFixed(2)}%`,
+                                        height: `${((box.boundingBox.height / imageRatio) / 17.5).toFixed(2)}%`,
+                                        border: `2px solid ${selectedBox === box.uuid ? '#1bfc06' : '#FF0000'}`,
+                                    }}
+                                />
+                                ))}
+                            </>
+                        : 
+                            <>
+                            <Grid  container item xs={12}>
+                                <Grid item xs={6}>
+                                    <h1 style={{ marginTop: '-12px' }}>Label: {exerciseHistoric[exerciseHistoric.length - 1]["label"]}</h1>
+                                    <h2>Type: {exerciseHistoric[exerciseHistoric.length - 1]["type"]}</h2>
+                                    <h2>Duration: {secondsToHms(exerciseHistoric[exerciseHistoric.length - 1]["duration"])}</h2>
+                                    
+                                    <Box
+                                        m="12px 0 0 0"
+                                        height="40vh"
+                                        sx={{
+                                        "& .MuiDataGrid-root": {
+                                            border: "none",
+                                        },
+                                        "& .MuiDataGrid-cell": {
+                                            borderBottom: "none",
+                                        },
+                                        "& .name-column--cell": {
+                                            color: colors.greenAccent[300],
+                                        },
+                                        "& .MuiDataGrid-columnHeaders": {
+                                            backgroundColor: colors.blueAccent[700],
+                                            borderBottom: "none",
+                                        },
+                                        "& .MuiDataGrid-virtualScroller": {
+                                            backgroundColor: colors.primary[400],
+                                        },
+                                        "& .MuiDataGrid-footerContainer": {
+                                            borderTop: "none",
+                                            backgroundColor: colors.blueAccent[700],
+                                        },
+                                        "& .MuiCheckbox-root": {
+                                            color: `${colors.greenAccent[200]} !important`,
+                                        },
+                                        "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+                                            color: `${colors.grey[100]} !important`,
+                                            marginBottom: "12px"
+                                        },
+                                        }}
+                                    >
+                                            <DataGrid
+                                                rows= { exerciseHistoric[exerciseHistoric.length - 1]["log"]}
+                                                columns={columns}
+                                                style={{
+                                                    width: "100%",
+                                                    maxWidth: "99.90%",
+                                                    marginTop: "42px"
+                                                }}
+                                            />
+                                
+                                        
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Box component="form" display={"flex"} justifyContent={"center"} flexDirection={"column"} marginLeft={"32px"} >
+                                        <Autocomplete
+                                            disablePortal
+                                            id="combo-box-demo"
+                                            options={options}
+                                            sx={{ width: 300 }}
+                                            renderInput={(params) => <TextField {...params} label="Patient" />}
+                                        />
+                                        <div style={{
+                                                marginTop: "24px"
+                                            }}>Evaluation:&nbsp;
+                                                <Slider
+                                                    aria-label="Temperature"
+                                                    defaultValue={5}
+                                                    getAriaValueText={valuetext}
+                                                    valueLabelDisplay="auto"
+                                                    step={1}
+                                                    marks
+                                                    min={1}
+                                                    max={10}
+                                                    style={{
+                                                        marginTop: "8px",
+                                                        maxWidth: "90%"
+                                                    }}
+                                                    color="secondary"
+                                                />
+                                           
+                                        </div>
+                                        <TextField
+                                            id="outlined-multiline-static"
+                                            label="Commentary"
+                                            
+                                            style={{
+                                                marginTop: "24px"
+                                            }}
+                                            multiline
+                                            rows={10}
+                                            defaultValue="Default Value"
+                                        />
+                                    </Box>
+                                </Grid>
+                            </Grid>  
+                            </>
+                        }
                         </Box>
                     </Box>
                 </Grid>
@@ -542,7 +726,7 @@ const VRSession_Panel = props => {
                         {exerciseHistoric.map(exercise => (
                             <>
                                 <Box>
-                                    <p><strong>Label:</strong> {exercise.Label}<br/><strong>Type:</strong> {exercise.Type}<br/><strong>State:</strong> <em>{exercise.State}</em></p>
+                                    <p><strong>Label:</strong> {exercise.label}<br/><strong>Type:</strong> {exercise.type}<br/><strong>State:</strong> <em>{exercise.state}</em></p>
                                 </Box>
                             </>
                         ))}
