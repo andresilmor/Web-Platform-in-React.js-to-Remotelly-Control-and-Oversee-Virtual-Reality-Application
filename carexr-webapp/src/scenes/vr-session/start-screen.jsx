@@ -32,7 +32,7 @@ const VRSession_StartScreen = props => {
     const connectSession = async () => { 
         console.log(props.sessionId)
         props.setWsRoute(null)
-        props.setWsRoute("wss://8b02-193-136-194-58.ngrok-free.app/ws/vr/heal/session")
+        props.setWsRoute("wss://473b-193-136-194-58.ngrok-free.app/ws/vr/heal/session")
         
         props.setWsChannel(props.sessionId)
         props.sendMessage(JSON.stringify({

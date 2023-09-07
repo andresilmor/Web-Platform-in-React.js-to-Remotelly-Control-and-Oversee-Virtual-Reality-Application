@@ -7,7 +7,7 @@ import useWebSocket from 'react-use-websocket';
 import Cookies from 'js-cookie';
 import { useAuthUser } from "react-auth-kit";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
-import { GetPanoramicSessions } from "../../hooks/graphql/query/GetPanoramicSessions";
+import { GetInstitutionPacients } from "../../hooks/graphql/query/GetInstitutionPacients";
 
 import Rating, { IconContainerProps } from '@mui/material/Rating';
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
@@ -37,6 +37,53 @@ const VRSession_Panel = props => {
     const pingTime = 25;
 
     const [countdown, setCountdown] = useState(pingTime);
+
+    const [panoramicID, setPanoramicID] = useState("password");
+    const [directedFor, setDirectedFor] = useState( [""]);
+    const [institutionID, setInstitutionID] = useState(user.selectedOrganization.uuid);
+
+    var [getPacients, {loading, error, data, called}] = GetInstitutionPacients(institutionID);
+
+    const [exerciseSaved, setExerciseSaved] = useState(false)
+
+    useEffect(() => {
+        if (called && !loading) {
+            var content = [] 
+
+            console.log(data)
+
+            data["GetInstitutionPacients"].forEach((value, index) => {
+                
+                content.push({
+                    id: index,
+                    uuid: value["uuid"],
+                    label: value["name"]
+
+                })
+            });
+
+            setPatientsList(content)
+
+            /*
+            data["GetPanoramicSessions"].forEach((value, index) => {
+                
+                var createDate = new Date( value["meta"]["createdAt"] * 1000)
+                var updateDate = new Date( value["meta"]["updatedAt"] * 1000)
+                content.push({
+                    id: index,
+                    uuid: value["uuid"],
+                    label: value["label"],
+                    createdAt: createDate.getDate() + " / " + createDate.getMonth() + " / " + createDate.getFullYear(),
+                    updatedAt: updateDate.getDate() + " / " + updateDate.getMonth() + " / " + updateDate.getFullYear(),
+                    createdBy: value["meta"]["createdBy"]
+
+                })
+            });
+            setDataGridContent(content)
+            */
+
+        }
+    },[loading])
 
     const decreaseCountdown = () => {
       setCountdown((prev) => prev - 1)
@@ -90,16 +137,12 @@ const VRSession_Panel = props => {
 
     const [message, setMessage] = useState(null)
 
-    const [panoramicID, setPanoramicID] = useState("password");
-    const [directedFor, setDirectedFor] = useState( [""]);
-    const [institutionID, setInstitutionID] = useState(user.selectedOrganization.uuid);
   
     const [exerciseState, setExerciseState] = useState("unstarted")
 
     const [exerciseType, setExerciseType] = useState(0);
     const [exerciseLabel, setExerciseLabel] = useState("");
 
-    const [exerciseHistoric, setExerciseHistoric] = useState([]);
     const [selectedBox, setSelectedBox] = useState("");
 
     const [streamEventSource, setStreamEventSource] = useState(null)
@@ -108,12 +151,20 @@ const VRSession_Panel = props => {
 
     const [showLog, setShowLog] = useState(false);
     const [exerciseLog, setExerciseLog] = useState({})
+    const [exerciseCommentary, setExerciseCommentary] = useState("")
+    const [exerciseEvalution, setExerciseEvaluation] = useState(-1)
+    const [exercisePacient, setExercisePacient] = useState({})
 
     const [targetAlias, setTargetAlias] = useState("");
 
     const [stopState, setStopState] = useState("Stop");
 
     const [sessionUUID, setSessionUUID] = useState(uuidv4());
+
+    const [patientsList, setPatientsList] = useState([
+            { label: 'The Godfather', id: 1 },
+            { label: 'Pulp Fiction', id: 2 },
+        ])
 
     const {
         sendMessage,
@@ -144,7 +195,6 @@ const VRSession_Panel = props => {
         //reconnectAttempts: 10,
         //reconnectInterval: 3000,
       });
-    
 
     const startExercise = () => { 
 
@@ -152,7 +202,7 @@ const VRSession_Panel = props => {
         let receiverUUID = uuidv4()
 
 
-        setStreamEventSource(new EventSource('https://8b02-193-136-194-58.ngrok-free.app/sse/vr/panoramic/session/stream/receiver/' + receiverUUID + "/" + streamChannel))
+        setStreamEventSource(new EventSource('https://473b-193-136-194-58.ngrok-free.app/sse/vr/panoramic/session/stream/receiver/' + receiverUUID + "/" + streamChannel))
   
         setStreamReceiverUUID(receiverUUID)
         setStreamChannel(streamChannel)
@@ -171,12 +221,39 @@ const VRSession_Panel = props => {
     }
 
     const saveExercise = () => {
+        console.log("Save:")
+
+        props.message["state"] = "connected"
+
+        props.message["execute"] = {
+            requester: props.message["managerUUID"],
+            responder: props.message["applicationUUID"],
+            operation: "saveExercise",            
+            params: {
+                uuid: props.exerciseHistoric[0]["uuid"],
+                exerciseDuration: props.exerciseHistoric[0]["duration"],
+                pacientUID: exercisePacient["uuid"],
+                log: exerciseLog,
+                evaluation: exerciseEvalution >= 0 ? exerciseEvalution : null,
+                commentary: exerciseCommentary
+    
+    
+            }
+        }
+
+        props.sendMessage(JSON.stringify(props.message)) 
+
+        setExerciseSaved(true)
+
 
     }
 
     const runBasicOperation =  (operation) => { 
-        if (operation === "stopExercise")
+        if (operation === "stopExercise") {
+            getPacients()
             setStartTiming(false)
+
+        }
         
         props.message["execute"] = {
             requester: props.message["managerUUID"],
@@ -229,16 +306,16 @@ const VRSession_Panel = props => {
                         //------------------------------------------------------------------
                         case "stopExercise":
                             if (props.message["execute"]["return"]["hasStopped"] == true) {
-                                setExerciseState("Checking")
+                                setExerciseState("checking")
                                 setShowLog(true)
                                 setExerciseLog(props.message["execute"]["return"]["exerciseLog"])
 
-                                exerciseHistoric[exerciseHistoric.length - 1]["log"] = props.message["execute"]["return"]["exerciseLog"]["recognition"]
-                                exerciseHistoric[exerciseHistoric.length - 1]["uuid"] = uuidv4()
-                                exerciseHistoric[exerciseHistoric.length - 1]["duration"] = timing
-                                exerciseHistoric[exerciseHistoric.length - 1]["state"] = "Concluded"
+                                props.exerciseHistoric[0]["log"] = props.message["execute"]["return"]["exerciseLog"]["recognition"]
+                                props.exerciseHistoric[0]["uuid"] = uuidv4()
+                                props.exerciseHistoric[0]["duration"] = timing
+                                props.exerciseHistoric[0]["state"] = "Concluded"
                                 
-                                console.log(exerciseHistoric[exerciseHistoric.length - 1])
+                                console.log(props.exerciseHistoric[0])
                                  
                                 console.log(sessionUUID)
                        
@@ -322,14 +399,14 @@ const VRSession_Panel = props => {
     const startStreaming = () => { 
      
         if (exerciseType != 0 && exerciseLabel.length > 0) {
-            var historic = [...exerciseHistoric]
+            var historic = [...props.exerciseHistoric]
             historic.push({
                 "label": exerciseLabel,
                 "type":  getExerciseTypeExternalValue(exerciseType),
                 "state": "Running"
 
             })
-            setExerciseHistoric(historic)
+            props.setExerciseHistoric(historic)
 
             setExerciseState("running")
 
@@ -394,11 +471,6 @@ const VRSession_Panel = props => {
             }
         }
     ]
-   
-    const options = [
-        { label: 'The Godfather', id: 1 },
-        { label: 'Pulp Fiction', id: 2 },
-      ];
 
       const StyledRating = styled(Rating)(({ theme }) => ({
         '& .MuiRating-iconEmpty .MuiSvgIcon-root': {
@@ -433,10 +505,10 @@ const VRSession_Panel = props => {
         },
       };
       
-    const [exerciseEvalution, setExerciseEvaluation] = useState(3)
     function valuetext(value) {
         return `${value}°C`;
       }
+
     return (
       <Box sx={{ marginInline: "24px" }}>
         <Grid container>
@@ -553,7 +625,7 @@ const VRSession_Panel = props => {
                                         Restart
                                     </Button>
                                 </>
-                            :
+                            : !exerciseSaved ?
                                 <>
                                     <Button
                                         type="submit"
@@ -568,27 +640,37 @@ const VRSession_Panel = props => {
                                     >
                                         Save
                                     </Button>
-                                    <Button
-                                        type="submit"
-                                        color="primary"
-                                        variant="contained"
-                                        style={{
-                                            marginTop: "2px",
-                                            height: "100%"
-                                        }}
-                                        onClick={() => {props.setState("connected")}}
-                                    >
-                                        Cancel
-                                    </Button>
+                                </>
+
+                                : <>
                                 </>
                             }
                                 
+                                <Button
+                                        type="submit"
+                                        color={exerciseSaved ? "secondary" : "primary" }
+                                        variant="contained"
+                                        style={{
+                                            marginTop: "2px",
+                                            
+                                            marginLeft: "12px",
+                                            height: "100%"
+                                        }}
+                                        onClick={() => { 
+                                            if (exerciseState != "checking") {  
+                                                runBasicOperation("stopExercise")
+                                            } 
+                                            props.setState("connected")
+                                        }}
+                                    >
+                                        {exerciseSaved ? "Return" : "Cancel" }
+                                    </Button>
 
                         </FormControl>
                     </Box>
                     
                     <Box marginTop={"32px"}>
-                        {exerciseType == 2 && streamChannel != null && exerciseState == "running"  &&
+                        {exerciseType == 2 && streamChannel != null && (exerciseState == "running" || exerciseState == "paused" )  &&
                         <>
                             <h2><strong>Looking at:</strong> {targetAlias}</h2> 
                           
@@ -620,9 +702,9 @@ const VRSession_Panel = props => {
                             <>
                             <Grid  container item xs={12}>
                                 <Grid item xs={6}>
-                                    <h1 style={{ marginTop: '-12px' }}>Label: {exerciseHistoric[exerciseHistoric.length - 1]["label"]}</h1>
-                                    <h2>Type: {exerciseHistoric[exerciseHistoric.length - 1]["type"]}</h2>
-                                    <h2>Duration: {secondsToHms(exerciseHistoric[exerciseHistoric.length - 1]["duration"])}</h2>
+                                    <h1 style={{ marginTop: '-12px' }}>Label: {props.exerciseHistoric[props.exerciseHistoric.length - 1]["label"]}</h1>
+                                    <h2>Type: {props.exerciseHistoric[props.exerciseHistoric.length - 1]["type"]}</h2>
+                                    <h2>Duration: {secondsToHms(props.exerciseHistoric[props.exerciseHistoric.length - 1]["duration"])}</h2>
                                     
                                     <Box
                                         m="12px 0 0 0"
@@ -657,8 +739,9 @@ const VRSession_Panel = props => {
                                         },
                                         }}
                                     >
+                                        { props.exerciseHistoric != undefined && props.exerciseHistoric.length > 0 && props.exerciseHistoric[0]["log"] != undefined &&
                                             <DataGrid
-                                                rows= { exerciseHistoric[exerciseHistoric.length - 1]["log"]}
+                                                rows= { props.exerciseHistoric[0]["log"]}
                                                 columns={columns}
                                                 style={{
                                                     width: "100%",
@@ -666,7 +749,7 @@ const VRSession_Panel = props => {
                                                     marginTop: "42px"
                                                 }}
                                             />
-                                
+                                        }
                                         
                                     </Box>
                                 </Grid>
@@ -674,11 +757,18 @@ const VRSession_Panel = props => {
                                     <Box component="form" display={"flex"} justifyContent={"center"} flexDirection={"column"} marginLeft={"32px"} >
                                         <Autocomplete
                                             disablePortal
+                                            
                                             id="combo-box-demo"
-                                            options={options}
+                                            options={patientsList}
+                                            onChange={(e, v) => {
+                                                setExercisePacient(v)
+                                            }}
                                             sx={{ width: 300 }}
                                             renderInput={(params) => <TextField {...params} label="Patient" />}
+                                           
                                         />
+
+
                                         <div style={{
                                                 marginTop: "24px"
                                             }}>Evaluation:&nbsp;
@@ -696,19 +786,25 @@ const VRSession_Panel = props => {
                                                         maxWidth: "90%"
                                                     }}
                                                     color="secondary"
+                                                    onChange={(e, n) => {
+                                                        setExerciseEvaluation(n)
+                                                    }}
                                                 />
                                            
                                         </div>
                                         <TextField
                                             id="outlined-multiline-static"
                                             label="Commentary"
-                                            
+                                            onChange={(e) => {
+                                                setExerciseCommentary(e.target.value)
+                                            }}
                                             style={{
-                                                marginTop: "24px"
+                                                marginTop: "24px",
+                                                maxWidth: "90.6%"
                                             }}
                                             multiline
                                             rows={10}
-                                            defaultValue="Default Value"
+                                            defaultValue=""
                                         />
                                     </Box>
                                 </Grid>
@@ -723,7 +819,7 @@ const VRSession_Panel = props => {
                     <h2>Historic</h2>
 
                     <Box>
-                        {exerciseHistoric.map(exercise => (
+                        {props.exerciseHistoric.map(exercise => (
                             <>
                                 <Box>
                                     <p><strong>Label:</strong> {exercise.label}<br/><strong>Type:</strong> {exercise.type}<br/><strong>State:</strong> <em>{exercise.state}</em></p>

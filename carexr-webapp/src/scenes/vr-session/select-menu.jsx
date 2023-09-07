@@ -2,16 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Box, useTheme, Grid, Button, TextField } from "@mui/material";
 import Header from "../../components/Header";
 import { tokens } from "../../theme";
-import QRCode from "qrcode";
-import useWebSocket from 'react-use-websocket';
-import Cookies from 'js-cookie';
-import { useAuthUser } from "react-auth-kit";
-import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import { GetPanoramicSessions } from "../../hooks/graphql/query/GetPanoramicSessions";
 
 
-import { DataGrid,GridToolbar, GridColDef, GridApi, GridCellValue } from "@mui/x-data-grid";
-import { mockDataContacts } from "../../data/mockData";
+import { DataGrid,GridToolbar} from "@mui/x-data-grid";
+
 
 
 import { useSelector } from "react-redux";
@@ -60,7 +55,6 @@ const VRSession_SelectMenu = props => {
                 e.stopPropagation(); // don't select this row after clicking
         
                 const api = params.api;
-                //const thisRow = {};
 
                 var uuid;
 
@@ -85,19 +79,6 @@ const VRSession_SelectMenu = props => {
       ];
       
     
-    const rows = [
-      
-        { id: "2", uuid: ["dsda","dsadas"], firstName: "test", age: 42 },
-        { id: "3", uuid: "Lannister", firstName: "Jaime", age: 45 },
-        { id: "4", uuid: "Stark", firstName: "Arya", age: 16 },
-        { id: "5", uuid: "Targaryen", firstName: "Daenerys", age: null },
-        { id: "6", uuid: "Melisandre", firstName: null, age: 150 },
-        { id: "7", uuid: "Clifford", firstName: "Ferrara", age: 44 },
-        { id: "8", uuid: "Frances", firstName: "Rossini", age: 36 },
-        { id: "9", uuid: "Roxie", firstName: "Harvey", age: 65 },
-        { id: "0", uuid: "Snow", firstName: "Jon", age: 35 }
-      
-    ]
     
     const { user } = useSelector((state) => state)
       
@@ -112,7 +93,6 @@ const VRSession_SelectMenu = props => {
     const [institutionID, setInstitutionID] = useState(user.selectedOrganization.uuid);
       
     var [getHotspots, {loading, error, data, called}] = GetPanoramicSessions(institutionID,panoramicID,directedFor);
-
 
     const [dataGridType, setDataGridType] = useState("hotspots")
     const [dataGridContent, setDataGridContent] = useState([])
@@ -180,6 +160,9 @@ const VRSession_SelectMenu = props => {
                             setCurrentLocation(props.message["execute"]["return"]["currentLocation"] == "Lobby" ? "Start" : "Lobby")
                             break;
                         //------------------------------------------------------------------
+                        case "endSession":
+                            props.wsRoute(null)
+                            break;
 
                     }
                 }
@@ -194,6 +177,8 @@ const VRSession_SelectMenu = props => {
 
     const selectHotspot = async (uuid) => { 
         console.log(uuid)
+
+        props.message["state"] = "connected"
 
         props.message["execute"] = {
             requester: props.message["managerUUID"],
@@ -231,11 +216,20 @@ const VRSession_SelectMenu = props => {
 
         props.sendMessage(JSON.stringify(props.message))  
         console.log(props.message)
-        /*if (currentLocation == "start")
-            setCurrentLocation("lobby")
-        else
-            setCurrentLocation("start")
-        */
+    }
+
+    const endSession = async () => {
+        console.log("Ending Session")
+        props.message["state"] = "connected"
+        props.message["execute"] = {
+            requester: props.message["managerUUID"],
+            responder: props.message["applicationUUID"],
+            operation: "endSession",            
+            params: null,
+          }
+
+        props.sendMessage(JSON.stringify(props.message))  
+
     }
 
     useEffect(()=>{
@@ -265,6 +259,23 @@ const VRSession_SelectMenu = props => {
                     >
                         {currentLocation == "Start" ? 'Go To Lobby' : currentLocation == "Loading" ? "Loading..." :  "End Session" }
                     </Button>
+                    {currentLocation != "Loading" &&
+                    <>
+                    <Button
+                        onClick={endSession}
+                        sx={{
+                        backgroundColor: colors.blueAccent[700],
+                        color: colors.grey[100],
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        padding: "10px 20px",
+                        marginLeft: "12px",
+                        }}
+                    >
+                        End Session
+                    </Button>
+                    </>
+                    }
                     </Box>
                 </Box>
             </Grid>

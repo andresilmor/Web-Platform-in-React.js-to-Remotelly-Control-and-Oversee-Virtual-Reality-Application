@@ -38,6 +38,8 @@ const VRSession = () => {
     const [message, setMessage] = useState(null)
 
     const [panoramicData, setPanoramicData] = useState({})
+    
+    const [exerciseHistoric, setExerciseHistoric] = useState([]);
   
     const {
         sendMessage,
@@ -115,6 +117,11 @@ const VRSession = () => {
       setCountdown(pingTime)
 
     }, [countdown])
+
+    useEffect(() => {
+      console.log("setting null")
+      setExerciseHistoric([])
+    }, [])
  
     return (
         <>
@@ -125,7 +132,7 @@ const VRSession = () => {
         : state == "loading" ?
             <VRSession_Loading  message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} setSessionStreamId={setSessionStreamId} sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} setPanoramicData={setPanoramicData} />
         : state == "running" &&
-            <VRSession_Panel  message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sessionStreamId={sessionStreamId} setSessionStreamId={setSessionStreamId} sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} panoramicData={panoramicData} setToPing={setToPing} />
+            <VRSession_Panel  message={message} setState={setState} wsRoute={wsRoute} setWsRoute={setWsRoute} wsChannel={wsChannel} setWsChannel={setWsChannel} sessionId={sessionId} setSessionId={setSessionId} sessionStreamId={sessionStreamId} setSessionStreamId={setSessionStreamId} sendMessage={sendMessage} sessionType={sessionType} setSessionType={setSessionType} panoramicData={panoramicData} setToPing={setToPing} exerciseHistoric={exerciseHistoric} setExerciseHistoric={setExerciseHistoric}/>
         }
         </>
       );
