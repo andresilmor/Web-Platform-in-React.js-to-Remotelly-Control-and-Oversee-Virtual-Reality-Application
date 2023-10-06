@@ -11,7 +11,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { Provider } from 'react-redux';
 
 const client = new ApolloClient({
-  uri: "https://473b-193-136-194-58.ngrok-free.app/api",
+  uri: "https://866f-62-28-213-98.ngrok-free.app/api",
   cache: new InMemoryCache()
 })
 
